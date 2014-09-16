@@ -15,12 +15,11 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/xforge-at/XFUtils"
   s.license      = { :type => "MIT", :file => "LICENSE" }
   s.author             = { "XForge Software Development GmbH" => "contact@xforge.at" }
-  s.social_media_url   = "http://twitter.com/xforge-at"
+  s.social_media_url   = "http://twitter.com/xforge_at"
 
   s.platform     = :ios, "7.0"
   s.source       = { :git => "https://github.com/xforge-at/XFUtils.git", :tag => "0.1" }
 
-  s.source_files  = "Classes", "Classes/**/*.{h,m}"
-  s.exclude_files = "Classes/Exclude"
+  s.source_files  = "XFUtils", "XFUtils/**/*.{h,m}"
   s.requires_arc = true
 end
