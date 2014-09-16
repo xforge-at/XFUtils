@@ -6,8 +6,21 @@
 //  Copyright (c) 2014 XForge Software Development GmbH. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
-@interface XFUtils : NSObject
+#import "XFNetworkThread.h"
+#import "XFPromise.h"
+#import "XFFuture.h"
 
-@end
+#import "UIImage+Additions.h"
+#import "XFAnimator.h"
+
+#import "NSDate+Additions.h"
+
+#import "XFMethod.h"
+#import "XFRuntime.h"
+#import "XFClass.h"
+#import "XFProperty.h"
+#import "XFVariable.h"
+
+#import "XFCoreDataController.h"
