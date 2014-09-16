@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "XFUtils"
-  s.version      = "0.0.1"
+  s.version      = "0.1"
   s.summary      = "Utility methods used in XForge projects"
 
   s.description  = <<-DESC
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   s.social_media_url   = "http://twitter.com/xforge-at"
 
   s.platform     = :ios, "7.0"
-  s.source       = { :git => "https://github.com/xforge-at/XFUtils.git", :commit => "49a542fd1823da8f5e3eb22317e2ac92f84aeff2" }
+  s.source       = { :git => "https://github.com/xforge-at/XFUtils.git", :tag => "0.1" }
 
   s.source_files  = "Classes", "Classes/**/*.{h,m}"
   s.exclude_files = "Classes/Exclude"
