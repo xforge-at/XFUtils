@@ -1,9 +1,9 @@
 //
 //  XFClass.m
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 27/10/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFClass.h"
@@ -18,17 +18,14 @@
     NSPointerArray *_occupiedMemory;
 }
 
-
 static NSMutableDictionary *classes = nil;
 + (instancetype)classWithClassName:(NSString *)className {
     static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        classes = [NSMutableDictionary dictionary];
-    });
-    if(classes[className]) return classes[className];
-    
+    dispatch_once(&onceToken, ^{ classes = [NSMutableDictionary dictionary]; });
+    if (classes[className]) return classes[className];
+
     classes[className] = [[XFClass alloc] initWithClassName:className];
-    
+
     return classes[className];
 }
 
@@ -44,7 +41,7 @@ static NSMutableDictionary *classes = nil;
 - (XFClass *)superClass {
     if (_superClass) return _superClass;
     Class cls = NSClassFromString(_className);
-    if(!cls) return nil;
+    if (!cls) return nil;
     _superClass = [XFClass classWithClassName:NSStringFromClass(class_getSuperclass(cls))];
     return _superClass;
 }
@@ -53,20 +50,20 @@ static NSMutableDictionary *classes = nil;
     NSMutableArray *array = [NSMutableArray array];
     uint count = 0;
     Method *methods = class_copyMethodList(cls, &count);
-    
+
     for (int idx = 0; idx < count; idx++) {
         Method m = methods[idx];
         XFMethod *method = [XFMethod methodWithClass:self andPrimitiveMethod:m];
         [array addObject:method];
     }
-    
+
     [_occupiedMemory addPointer:methods];
     return array;
 }
 
-#define lazy_init_methods(name, class) \
-    if (name) return name; \
-    name = [self createMethodsFromClass:class]; \
+#define lazy_init_methods(name, class)                                                                                                                                                                 \
+    if (name) return name;                                                                                                                                                                             \
+    name = [self createMethodsFromClass:class];                                                                                                                                                        \
     return name;
 
 - (NSArray *)instanceMethods {
@@ -80,10 +77,10 @@ static NSMutableDictionary *classes = nil;
 
 #undef lazy_init_methods
 
-#define lazy_init(name, memory_to_free, initCodeBlock) \
-    if(name) return name; \
-    name = initCodeBlock(); \
-    [_occupiedMemory addPointer:memory_to_free]; \
+#define lazy_init(name, memory_to_free, initCodeBlock)                                                                                                                                                 \
+    if (name) return name;                                                                                                                                                                             \
+    name = initCodeBlock();                                                                                                                                                                            \
+    [_occupiedMemory addPointer:memory_to_free];                                                                                                                                                       \
     return name;
 
 - (NSArray *)properties {
@@ -123,7 +120,7 @@ static NSMutableDictionary *classes = nil;
 }
 
 - (void)dealloc {
-    while(_occupiedMemory.count > 0) {
+    while (_occupiedMemory.count > 0) {
         void *ptr = [_occupiedMemory pointerAtIndex:0];
         [_occupiedMemory removePointerAtIndex:0];
         free(ptr);

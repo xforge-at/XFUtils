@@ -1,9 +1,9 @@
 //
 //  XFMethod.h
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 27/10/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -12,7 +12,7 @@
 @class XFClass;
 @interface XFMethod : NSObject
 
-+ (instancetype) methodWithClass:(XFClass *)class andPrimitiveMethod:(Method)method;
++ (instancetype)methodWithClass:(XFClass *) class andPrimitiveMethod:(Method)method;
 
 - (NSInvocation *)invocationForObject:(id)object;
 

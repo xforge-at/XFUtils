@@ -1,9 +1,9 @@
 //
 //  XFUnknownTypeDescriptor.m
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 11/11/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFUnknownTypeDescriptor.h"
@@ -23,7 +23,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"(unknown type(%@))", _encoding ];
+    return [NSString stringWithFormat:@"(unknown type(%@))", _encoding];
 }
 
 @end

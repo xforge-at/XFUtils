@@ -1,9 +1,9 @@
 //
 //  XFProperty.h
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 28/10/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -24,13 +24,12 @@
 @property (nonatomic, strong, readonly) NSString *customSetterName;
 @property (nonatomic, strong, readonly) XFTypeDescriptor *typeDescriptor;
 
-@property (getter = isReadOnly, readonly) BOOL readOnly;
-@property (getter = isCopied, readonly) BOOL copied;
-@property (getter = isNonAtomic, readonly) BOOL nonAtomic;
-@property (getter = isReferenced, readonly) BOOL referenced;
-@property (getter = isDynamic, readonly) BOOL dynamic;
-@property (getter = isWeak, readonly) BOOL weak;
-@property (getter = isGarbageCollected, readonly) BOOL garbageCollected;
-
+@property (getter=isReadOnly, readonly) BOOL readOnly;
+@property (getter=isCopied, readonly) BOOL copied;
+@property (getter=isNonAtomic, readonly) BOOL nonAtomic;
+@property (getter=isReferenced, readonly) BOOL referenced;
+@property (getter=isDynamic, readonly) BOOL dynamic;
+@property (getter=isWeak, readonly) BOOL weak;
+@property (getter=isGarbageCollected, readonly) BOOL garbageCollected;
 
 @end

@@ -1,9 +1,9 @@
 //
 //  XFPrimitiveTypeDescriptor.m
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 10/11/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFPrimitiveTypeDescriptor.h"
@@ -36,10 +36,10 @@
     NSScanner *scanner = [NSScanner scannerWithString:encoding];
     NSString *actualType;
     [scanner scanCharactersFromSet:[NSCharacterSet alphanumericCharacterSet] intoString:&actualType];
-    if(!actualType) {
+    if (!actualType) {
         [scanner scanCharactersFromSet:[NSCharacterSet punctuationCharacterSet] intoString:&actualType];
     }
-    
+
     switch ([actualType characterAtIndex:0]) {
         case 'C':
             _unsign = YES;
@@ -91,9 +91,9 @@
 
 - (NSString *)description {
     NSMutableString *descrString = [@"" mutableCopy];
-    
+
     if (self.isUnsigned) [descrString appendString:@"unsigned "];
-    
+
     switch (_type) {
         case XFPrimitiveTypeInt:
             [descrString appendString:@"int"];
@@ -129,12 +129,12 @@
             [descrString appendString:@"SEL"];
             break;
     }
-    
+
     return [descrString copy];
 }
 
 - (BOOL)isEqual:(id)object {
-    if(![object isKindOfClass:self.class]) return NO;
+    if (![object isKindOfClass:self.class]) return NO;
     XFPrimitiveTypeDescriptor *otherType = (XFPrimitiveTypeDescriptor *)object;
     return otherType.unsign == self.unsign && otherType.type == self.type;
 }

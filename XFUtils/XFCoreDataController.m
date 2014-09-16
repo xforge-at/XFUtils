@@ -1,9 +1,9 @@
 //
 //  XFCoreDataController.m
-//  StApp
+//  XFUtils
 //
 //  Created by Manu Wallner on 07.08.13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFCoreDataController.h"

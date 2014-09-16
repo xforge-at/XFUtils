@@ -1,9 +1,9 @@
 //
 //  XFStructTypeDescriptor.m
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 10/11/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFStructTypeDescriptor.h"
@@ -27,10 +27,12 @@
     NSScanner *scanner = [NSScanner scannerWithString:encoding];
     [scanner scanString:@"{" intoString:nil];
     NSString *name;
-    if([scanner scanUpToString:@"=" intoString:&name]) { }
-    else if([scanner scanUpToString:@"}" intoString:&name]) { return; }
+    if ([scanner scanUpToString:@"=" intoString:&name]) {
+    } else if ([scanner scanUpToString:@"}" intoString:&name]) {
+        return;
+    }
     _structName = name;
-    //TODO: Get types of struct member variables
+    // TODO: Get types of struct member variables
 }
 
 - (NSString *)description {
@@ -38,7 +40,7 @@
 }
 
 - (BOOL)isEqual:(id)object {
-    if(![object isKindOfClass:self.class]) return NO;
+    if (![object isKindOfClass:self.class]) return NO;
     XFStructTypeDescriptor *otherType = (XFStructTypeDescriptor *)object;
     return [otherType.structName isEqual:self.structName];
 }

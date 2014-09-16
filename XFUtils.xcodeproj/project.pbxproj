@@ -28,7 +28,6 @@
 		32E6191D19C82C9300846D75 /* XFFunctionPointerTypeDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E6191119C82C9300846D75 /* XFFunctionPointerTypeDescriptor.m */; };
 		32E6191E19C82C9300846D75 /* XFPrimitiveTypeDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E6191319C82C9300846D75 /* XFPrimitiveTypeDescriptor.m */; };
 		32E6191F19C82C9300846D75 /* XFObjectTypeDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E6191519C82C9300846D75 /* XFObjectTypeDescriptor.m */; };
-		32E6192019C82C9300846D75 /* XFTypeMaker.m in Sources */ = {isa = PBXBuildFile; fileRef = 32E6191719C82C9300846D75 /* XFTypeMaker.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -89,8 +88,6 @@
 		32E6191319C82C9300846D75 /* XFPrimitiveTypeDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XFPrimitiveTypeDescriptor.m; sourceTree = "<group>"; };
 		32E6191419C82C9300846D75 /* XFObjectTypeDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XFObjectTypeDescriptor.h; sourceTree = "<group>"; };
 		32E6191519C82C9300846D75 /* XFObjectTypeDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XFObjectTypeDescriptor.m; sourceTree = "<group>"; };
-		32E6191619C82C9300846D75 /* XFTypeMaker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XFTypeMaker.h; sourceTree = "<group>"; };
-		32E6191719C82C9300846D75 /* XFTypeMaker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XFTypeMaker.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -217,8 +214,6 @@
 				32E6191319C82C9300846D75 /* XFPrimitiveTypeDescriptor.m */,
 				32E6191419C82C9300846D75 /* XFObjectTypeDescriptor.h */,
 				32E6191519C82C9300846D75 /* XFObjectTypeDescriptor.m */,
-				32E6191619C82C9300846D75 /* XFTypeMaker.h */,
-				32E6191719C82C9300846D75 /* XFTypeMaker.m */,
 			);
 			name = Types;
 			sourceTree = "<group>";
@@ -331,7 +326,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				32E618F119C824E200846D75 /* XFAnimator.m in Sources */,
-				32E6192019C82C9300846D75 /* XFTypeMaker.m in Sources */,
 				32E6191F19C82C9300846D75 /* XFObjectTypeDescriptor.m in Sources */,
 				32E6191819C82C9300846D75 /* XFTypeDescriptor.m in Sources */,
 				32E618E519C81E3600846D75 /* NSDate+Additions.m in Sources */,

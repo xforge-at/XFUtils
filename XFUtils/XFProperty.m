@@ -1,9 +1,9 @@
 //
 //  XFProperty.m
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 28/10/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFProperty.h"
@@ -21,7 +21,7 @@ typedef NS_OPTIONS(uint, XFPropertyTypeAttribute) {
 };
 
 @interface XFProperty ()
-@property (nonatomic, readonly) objc_property_t property;
+@property (nonatomic, readonly) objc_property_t property ;
 @property (nonatomic) XFPropertyTypeAttribute attributes;
 @end
 
@@ -45,19 +45,19 @@ typedef NS_OPTIONS(uint, XFPropertyTypeAttribute) {
     _attributes = 0;
     NSString *attributesString = [NSString stringWithUTF8String:attr];
     NSScanner *scanner = [NSScanner scannerWithString:attributesString];
-    
+
     NSCharacterSet *seperatorSet = [NSCharacterSet characterSetWithCharactersInString:@","];
-    
-    //see #//apple_ref/doc/uid/TP40008048-CH101
+
+    // see #//apple_ref/doc/uid/TP40008048-CH101
     NSString *modifierString = @"RC&NGSDWP";
     NSCharacterSet *modifierSet = [NSCharacterSet characterSetWithCharactersInString:modifierString];
-    
-    //T is always the first character
+
+    // T is always the first character
     [scanner scanString:@"T" intoString:nil];
     NSString *type;
     [scanner scanUpToCharactersFromSet:seperatorSet intoString:&type];
     _typeDescriptor = [XFTypeDescriptor typeDescriptorWithEncoding:type];
-    
+
     [scanner scanCharactersFromSet:seperatorSet intoString:nil];
     while (![scanner scanString:@"V" intoString:nil] && !scanner.isAtEnd) {
         NSString *modifierString, *modifierType;
@@ -68,24 +68,24 @@ typedef NS_OPTIONS(uint, XFPropertyTypeAttribute) {
     }
 }
 
-- (void)addModifier:(NSString *)modifierString ofType:(NSString *)modifierType{
+- (void)addModifier:(NSString *)modifierString ofType:(NSString *)modifierType {
     if ([modifierType isEqualToString:@"R"]) {
         _attributes |= XFPropertyTypeAttributeReadonly;
-    } else if([modifierType isEqualToString:@"C"]) {
+    } else if ([modifierType isEqualToString:@"C"]) {
         _attributes |= XFPropertyTypeAttributeCopy;
-    } else if([modifierType isEqualToString:@"&"]) {
+    } else if ([modifierType isEqualToString:@"&"]) {
         _attributes |= XFPropertyTypeAttributeReference;
-    } else if([modifierType isEqualToString:@"N"]) {
+    } else if ([modifierType isEqualToString:@"N"]) {
         _attributes |= XFPropertyTypeAttributeNonAtomic;
-    } else if([modifierType isEqualToString:@"D"]) {
+    } else if ([modifierType isEqualToString:@"D"]) {
         _attributes |= XFPropertyTypeAttributeDynamic;
-    } else if([modifierType isEqualToString:@"W"]) {
+    } else if ([modifierType isEqualToString:@"W"]) {
         _attributes |= XFPropertyTypeAttributeWeak;
-    } else if([modifierType isEqualToString:@"P"]) {
+    } else if ([modifierType isEqualToString:@"P"]) {
         _attributes |= XFPropertyTypeAttributeGarbageCollected;
-    } else if([modifierType isEqualToString:@"G"]) {
+    } else if ([modifierType isEqualToString:@"G"]) {
         _customGetterName = modifierString;
-    } else if([modifierType isEqualToString:@"S"]) {
+    } else if ([modifierType isEqualToString:@"S"]) {
         _customSetterName = modifierString;
     }
 }
@@ -101,7 +101,7 @@ typedef NS_OPTIONS(uint, XFPropertyTypeAttribute) {
     if(self.isReferenced) [descriptionString appendString:@"assign, "];
     if(self.customGetterName) [descriptionString appendFormat:@"getter = %@, ", self.customGetterName];
     if(self.customSetterName) [descriptionString appendFormat:@"getter = %@, ", self.customSetterName];
-    
+
     if ([descriptionString hasSuffix:@", "]) {
         [descriptionString deleteCharactersInRange:NSMakeRange(descriptionString.length-2, 2)];
     }
@@ -110,15 +110,14 @@ typedef NS_OPTIONS(uint, XFPropertyTypeAttribute) {
     if (_typeDescriptor) {
         [descriptionString appendFormat:@"%@ ", _typeDescriptor.description];
     }
-    
+
     [descriptionString appendString:self.name];
-    
+
     if ([descriptionString hasPrefix:@"() "]) {
         [descriptionString deleteCharactersInRange:NSMakeRange(0, 3)];
     }
     return [descriptionString copy];
 }
-
 
 - (id)valueForObject:(id)object {
     return [object objectForKey:_name];

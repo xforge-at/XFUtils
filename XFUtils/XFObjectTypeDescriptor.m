@@ -1,9 +1,9 @@
 //
 //  XFObjectTypeDescriptor.m
-//  XFDebugMenu
+//  XFUtils
 //
 //  Created by Manu Wallner on 10/11/13.
-//  Copyright (c) 2013 XForge. All rights reserved.
+//  Copyright (c) 2013 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFObjectTypeDescriptor.h"
@@ -21,16 +21,15 @@
             _objectClassName = @"id";
             _isId = YES;
         } else {
-            //ugly but quickest way to do this
-            _objectClassName = [encoding substringWithRange:NSMakeRange(2, encoding.length-3)];
+            // ugly but quickest way to do this
+            _objectClassName = [encoding substringWithRange:NSMakeRange(2, encoding.length - 3)];
             _isId = NO;
         }
         if ([_objectClassName hasPrefix:@"<"] && [_objectClassName hasSuffix:@">"]) {
             _hasProtocol = YES;
             _isId = YES;
-            _objectClassName = [_objectClassName substringWithRange:NSMakeRange(1, _objectClassName.length-2)];
+            _objectClassName = [_objectClassName substringWithRange:NSMakeRange(1, _objectClassName.length - 2)];
         }
-        
     }
     return self;
 }
@@ -60,10 +59,9 @@
     if (self) {
         _isId = YES;
         _hasProtocol = YES;
-        _objectClassName = [NSString stringWithFormat:@"id<%@>",protocol];
+        _objectClassName = [NSString stringWithFormat:@"id<%@>", protocol];
     }
     return self;
-    
 }
 
 - (NSString *)description {
@@ -73,7 +71,7 @@
 }
 
 - (BOOL)isEqual:(id)object {
-    if(![object isKindOfClass:self.class]) return NO;
+    if (![object isKindOfClass:self.class]) return NO;
     XFObjectTypeDescriptor *otherType = (XFObjectTypeDescriptor *)object;
     return [otherType.objectClassName isEqual:_objectClassName] && otherType.isId == _isId && self.hasProtocol == otherType.hasProtocol;
 }
