@@ -26,6 +26,11 @@
 @property (nonatomic, assign, readonly) uint64_t ID;
 
 /**
+ * This Array of XFPromises is called after this one completes
+ */
+@property (nonatomic, strong) NSArray *children;
+
+/**
  *  The value with which the promise was fulfilled
  */
 @property (nonatomic, strong, readonly) id value;
@@ -57,16 +62,16 @@
 /**
  *  Set the success and error blocks
  */
-- (void)then:(void (^)(id))successBlock error:(void (^)(NSError *))errorBlock;
+- (XFPromise *)then:(void (^)(id))successBlock error:(void (^)(NSError *))errorBlock;
 
 /**
  *  Only set the success block for when the promise is fulfilled
  */
-- (void)then:(void (^)(id))successBlock;
+- (XFPromise *)then:(void (^)(id))successBlock;
 
 /**
  *  Only set the error block for when the promise is rejected
  */
-- (void)error:(void (^)(NSError *))errorBlock;
+- (XFPromise *)error:(void (^)(NSError *))errorBlock;
 
 @end

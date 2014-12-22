@@ -1,14 +1,14 @@
 //
 //  XFPromise.m
-//  XFUtils
+//  iXF
 //
 //  Created by Manu Wallner on 11/02/14.
-//  Copyright (c) 2014 XForge Software Development GmbH. All rights reserved.
+//  Copyright (c) 2014 ETM. All rights reserved.
 //
 
 #import "XFPromise.h"
 
-typedef enum OAPromiseState { OAPromiseStatePending, OAPromiseStateFulfilled, OAPromiseStateRejected } OAPromiseState;
+typedef enum XFPromiseState { XFPromiseStatePending, XFPromiseStateFulfilled, XFPromiseStateRejected } XFPromiseState;
 
 @interface XFPromise ()
 
@@ -18,7 +18,7 @@ typedef enum OAPromiseState { OAPromiseStatePending, OAPromiseStateFulfilled, OA
 @property (nonatomic, strong, readwrite) id value;
 @property (nonatomic, strong, readwrite) NSError *error;
 
-@property (nonatomic, assign) OAPromiseState currentState;
+@property (nonatomic, assign) XFPromiseState currentState;
 
 @end
 
@@ -33,8 +33,9 @@ static uint64_t IDS = 0;
 - (id)init {
     self = [super init];
     if (self) {
+        self.children = @[];
         _ID = IDS++;
-        _currentState = OAPromiseStatePending;
+        _currentState = XFPromiseStatePending;
     }
     return self;
 }
@@ -48,28 +49,34 @@ static dispatch_queue_t _isolationQueue;
 
 - (void)runBlock:(void (^)(id))block withValue:(id)value {
     if (block) {
-
         if (self.runQueue) {
             dispatch_async(self.runQueue, ^{ block(value); });
         } else {
             dispatch_async(dispatch_get_main_queue(), ^{ block(value); });
         }
     }
+    [_children enumerateObjectsUsingBlock:^(XFPromise *child, NSUInteger idx, BOOL *stop) {
+        if (self.error) {
+            [child reject:self.error];
+        } else if (self.value) {
+            [child fulfill:self.value];
+        }
+    }];
 }
 
-- (BOOL)changeState:(OAPromiseState)toState {
+- (BOOL)changeState:(XFPromiseState)toState {
     switch (self.currentState) {
-        case OAPromiseStatePending:
+        case XFPromiseStatePending:
             break;
-        case OAPromiseStateRejected:
-        case OAPromiseStateFulfilled:
+        case XFPromiseStateRejected:
+        case XFPromiseStateFulfilled:
             return YES;
     }
     switch (toState) {
-        case OAPromiseStateFulfilled:
+        case XFPromiseStateFulfilled:
             [self runBlock:self.successBlock withValue:self.value];
             break;
-        case OAPromiseStateRejected:
+        case XFPromiseStateRejected:
             [self runBlock:self.errorBlock withValue:self.error];
             break;
         default:
@@ -83,9 +90,9 @@ static dispatch_queue_t _isolationQueue;
     __weak XFPromise *weakSelf = self;
     dispatch_async(self.isolationQueue, ^{
         XFPromise *promise = weakSelf;
-        if (promise.currentState != OAPromiseStatePending) return;
+        if (promise.currentState != XFPromiseStatePending) return;
         _value = value;
-        [promise changeState:OAPromiseStateFulfilled];
+        [promise changeState:XFPromiseStateFulfilled];
     });
 }
 
@@ -93,37 +100,46 @@ static dispatch_queue_t _isolationQueue;
     __weak XFPromise *weakSelf = self;
     dispatch_async(self.isolationQueue, ^{
         XFPromise *promise = weakSelf;
-        if (promise.currentState != OAPromiseStatePending) return;
+        if (promise.currentState != XFPromiseStatePending) return;
         _error = error;
-        [promise changeState:OAPromiseStateRejected];
+        [promise changeState:XFPromiseStateRejected];
     });
 }
 
-- (void)then:(void (^)(id))successBlock error:(void (^)(NSError *))errorBlock {
+- (XFPromise *)then:(void (^)(id))successBlock error:(void (^)(NSError *))errorBlock {
     __weak XFPromise *weakSelf = self;
+    XFPromise *returnPromise = [self returnDescendant];
     dispatch_async(self.isolationQueue, ^{
         XFPromise *promise = weakSelf;
         if (errorBlock) _errorBlock = errorBlock;
         if (successBlock) _successBlock = successBlock;
         switch (promise.currentState) {
-            case OAPromiseStateFulfilled:
+            case XFPromiseStateFulfilled:
                 [promise runBlock:_successBlock withValue:promise.value];
                 break;
-            case OAPromiseStateRejected:
+            case XFPromiseStateRejected:
                 [promise runBlock:_errorBlock withValue:promise.error];
                 break;
             default:
                 break;
         }
     });
+    return returnPromise;
 }
 
-- (void)then:(void (^)(id))successBlock {
-    [self then:successBlock error:nil];
+- (XFPromise *)then:(void (^)(id))successBlock {
+    return [self then:successBlock error:nil];
 }
 
-- (void)error:(void (^)(NSError *))errorBlock {
-    [self then:nil error:errorBlock];
+- (XFPromise *)error:(void (^)(NSError *))errorBlock {
+    return [self then:nil error:errorBlock];
+}
+
+- (XFPromise *)returnDescendant {
+    XFPromise *newPromise = [XFPromise promise];
+    newPromise.runQueue = self.runQueue;
+    self.children = [self.children arrayByAddingObject:newPromise];
+    return newPromise;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
