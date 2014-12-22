@@ -1,9 +1,9 @@
 //
 //  XFPromise.m
-//  iXF
+//  XFUtils
 //
 //  Created by Manu Wallner on 11/02/14.
-//  Copyright (c) 2014 ETM. All rights reserved.
+//  Copyright (c) 2014 XForge Software Development GmbH. All rights reserved.
 //
 
 #import "XFPromise.h"
