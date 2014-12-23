@@ -10,10 +10,17 @@
 
 typedef enum XFPromiseState { XFPromiseStatePending, XFPromiseStateFulfilled, XFPromiseStateRejected } XFPromiseState;
 
+@interface XFPromiseResult : NSObject
+@property (nonatomic) BOOL hasValue;
+@property (nonatomic, strong) id value;
+@end
+@implementation XFPromiseResult
+@end
+
 @interface XFPromise ()
 
-@property (nonatomic, copy, readwrite) void (^successBlock)(id);
-@property (nonatomic, copy, readwrite) void (^errorBlock)(NSError *);
+@property (nonatomic, copy, readwrite) id (^successBlock)(id);
+@property (nonatomic, copy, readwrite) id (^errorBlock)(NSError *);
 @property (nonatomic, assign, readwrite) uint64_t ID;
 @property (nonatomic, strong, readwrite) id value;
 @property (nonatomic, strong, readwrite) NSError *error;
@@ -47,19 +54,24 @@ static dispatch_queue_t _isolationQueue;
     return _isolationQueue;
 }
 
-- (void)runBlock:(void (^)(id))block withValue:(id)value {
+- (void)runBlock:(XFPromiseResult * (^)(id))block withValue:(id)value {
+    __block XFPromiseResult *result = nil;
     if (block) {
         if (self.runQueue) {
-            dispatch_async(self.runQueue, ^{ block(value); });
+            dispatch_async(self.runQueue, ^{ result = block(value); });
         } else {
-            dispatch_async(dispatch_get_main_queue(), ^{ block(value); });
+            dispatch_async(dispatch_get_main_queue(), ^{ result = block(value); });
         }
     }
     [_children enumerateObjectsUsingBlock:^(XFPromise *child, NSUInteger idx, BOOL *stop) {
+        id newValue = nil;
+        if (result.hasValue) {
+            newValue = result.value;
+        }
         if (self.error) {
-            [child reject:self.error];
+            [child reject:newValue ? newValue : self.error];
         } else if (self.value) {
-            [child fulfill:self.value];
+            [child fulfill:newValue ? newValue : self.value];
         }
     }];
 }
@@ -107,6 +119,38 @@ static dispatch_queue_t _isolationQueue;
 }
 
 - (XFPromise *)then:(void (^)(id))successBlock error:(void (^)(NSError *))errorBlock {
+    return [self thenWrapped:^(id value) {
+        XFPromiseResult *result = XFPromiseResult.new;
+        result.hasValue = NO;
+        successBlock(value);
+        return result;
+    } errorWrapped:^(NSError *err) {
+        XFPromiseResult *result = XFPromiseResult.new;
+        result.hasValue = NO;
+        errorBlock(err);
+        return result;
+    }];
+}
+
+- (XFPromise *)thenNext:(id (^)(id))successBlock {
+    return [self thenNext:successBlock error:nil];
+}
+
+- (XFPromise *)thenNext:(id (^)(id))successBlock error:(void (^)(NSError *))errorBlock {
+    return [self thenWrapped:^(id value) {
+        XFPromiseResult *result = XFPromiseResult.new;
+        result.hasValue = YES;
+        result.value = successBlock(value);
+        return result;
+    } errorWrapped:^(NSError *err) {
+        XFPromiseResult *result = XFPromiseResult.new;
+        result.hasValue = NO;
+        errorBlock(err);
+        return result;
+    }];
+}
+
+- (XFPromise *)thenWrapped:(XFPromiseResult * (^)(id))successBlock errorWrapped:(XFPromiseResult * (^)(NSError *))errorBlock {
     __weak XFPromise *weakSelf = self;
     XFPromise *returnPromise = [self returnDescendant];
     dispatch_async(self.isolationQueue, ^{

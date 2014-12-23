@@ -13,12 +13,12 @@
 /**
  *  This block is executed when the promise sucessfully completes
  */
-@property (nonatomic, copy, readonly) void (^successBlock)(id);
+@property (nonatomic, copy, readonly) id (^successBlock)(id);
 
 /**
  *  This block is executed when the promise is rejected
  */
-@property (nonatomic, copy, readonly) void (^errorBlock)(NSError *);
+@property (nonatomic, copy, readonly) id (^errorBlock)(NSError *);
 
 /**
  *  This is a running ID that is different for every promise
@@ -63,11 +63,13 @@
  *  Set the success and error blocks
  */
 - (XFPromise *)then:(void (^)(id))successBlock error:(void (^)(NSError *))errorBlock;
+- (XFPromise *)thenNext:(id (^)(id))successBlock error:(void (^)(NSError *))errorBlock;
 
 /**
  *  Only set the success block for when the promise is fulfilled
  */
 - (XFPromise *)then:(void (^)(id))successBlock;
+- (XFPromise *)thenNext:(id (^)(id))successBlock;
 
 /**
  *  Only set the error block for when the promise is rejected
