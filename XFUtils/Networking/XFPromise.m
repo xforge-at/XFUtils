@@ -122,12 +122,12 @@ static dispatch_queue_t _isolationQueue;
     return [self thenWrapped:^(id value) {
         XFPromiseResult *result = XFPromiseResult.new;
         result.hasValue = NO;
-        successBlock(value);
+        if (successBlock) successBlock(value);
         return result;
     } errorWrapped:^(NSError *err) {
         XFPromiseResult *result = XFPromiseResult.new;
         result.hasValue = NO;
-        errorBlock(err);
+        if (errorBlock) errorBlock(err);
         return result;
     }];
 }
@@ -139,13 +139,17 @@ static dispatch_queue_t _isolationQueue;
 - (XFPromise *)thenNext:(id (^)(id))successBlock error:(void (^)(NSError *))errorBlock {
     return [self thenWrapped:^(id value) {
         XFPromiseResult *result = XFPromiseResult.new;
-        result.hasValue = YES;
-        result.value = successBlock(value);
+        if (successBlock) {
+            result.hasValue = YES;
+            result.value = successBlock(value);
+        } else {
+            result.hasValue = NO;
+        }
         return result;
     } errorWrapped:^(NSError *err) {
         XFPromiseResult *result = XFPromiseResult.new;
         result.hasValue = NO;
-        errorBlock(err);
+        if (errorBlock) errorBlock(err);
         return result;
     }];
 }
