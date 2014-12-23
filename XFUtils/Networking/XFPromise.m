@@ -55,25 +55,22 @@ static dispatch_queue_t _isolationQueue;
 }
 
 - (void)runBlock:(XFPromiseResult * (^)(id))block withValue:(id)value {
-    __block XFPromiseResult *result = nil;
     if (block) {
-        if (self.runQueue) {
-            dispatch_async(self.runQueue, ^{ result = block(value); });
-        } else {
-            dispatch_async(dispatch_get_main_queue(), ^{ result = block(value); });
-        }
+        dispatch_async(self.runQueue ? self.runQueue : dispatch_get_main_queue(), ^{
+            XFPromiseResult *result = block(value);
+            [_children enumerateObjectsUsingBlock:^(XFPromise *child, NSUInteger idx, BOOL *stop) {
+                id newValue = nil;
+                if (result.hasValue) {
+                    newValue = result.value;
+                }
+                if (self.error) {
+                    [child reject:newValue ? newValue : self.error];
+                } else if (self.value) {
+                    [child fulfill:newValue ? newValue : self.value];
+                }
+            }];
+        });
     }
-    [_children enumerateObjectsUsingBlock:^(XFPromise *child, NSUInteger idx, BOOL *stop) {
-        id newValue = nil;
-        if (result.hasValue) {
-            newValue = result.value;
-        }
-        if (self.error) {
-            [child reject:newValue ? newValue : self.error];
-        } else if (self.value) {
-            [child fulfill:newValue ? newValue : self.value];
-        }
-    }];
 }
 
 - (BOOL)changeState:(XFPromiseState)toState {
@@ -119,17 +116,20 @@ static dispatch_queue_t _isolationQueue;
 }
 
 - (XFPromise *)then:(void (^)(id))successBlock error:(void (^)(NSError *))errorBlock {
-    return [self thenWrapped:^(id value) {
-        XFPromiseResult *result = XFPromiseResult.new;
-        result.hasValue = NO;
-        if (successBlock) successBlock(value);
-        return result;
-    } errorWrapped:^(NSError *err) {
-        XFPromiseResult *result = XFPromiseResult.new;
-        result.hasValue = NO;
-        if (errorBlock) errorBlock(err);
-        return result;
-    }];
+    return [self thenWrapped:successBlock ? ^(id value) {
+                                                XFPromiseResult *result = XFPromiseResult.new;
+                                                result.hasValue = NO;
+                                                successBlock(value);
+                                                return result;
+                                            }
+                                          : nil
+                errorWrapped:errorBlock ? ^(NSError *err) {
+                                              XFPromiseResult *result = XFPromiseResult.new;
+                                              result.hasValue = NO;
+                                              errorBlock(err);
+                                              return result;
+                                          }
+                                        : nil];
 }
 
 - (XFPromise *)thenNext:(id (^)(id))successBlock {
@@ -137,21 +137,20 @@ static dispatch_queue_t _isolationQueue;
 }
 
 - (XFPromise *)thenNext:(id (^)(id))successBlock error:(void (^)(NSError *))errorBlock {
-    return [self thenWrapped:^(id value) {
-        XFPromiseResult *result = XFPromiseResult.new;
-        if (successBlock) {
-            result.hasValue = YES;
-            result.value = successBlock(value);
-        } else {
-            result.hasValue = NO;
-        }
-        return result;
-    } errorWrapped:^(NSError *err) {
-        XFPromiseResult *result = XFPromiseResult.new;
-        result.hasValue = NO;
-        if (errorBlock) errorBlock(err);
-        return result;
-    }];
+    return [self thenWrapped:successBlock ? ^(id value) {
+                                                XFPromiseResult *result = XFPromiseResult.new;
+                                                result.hasValue = YES;
+                                                result.value = successBlock(value);
+                                                return result;
+                                            }
+                                          : nil
+                errorWrapped:errorBlock ? ^(NSError *err) {
+                                              XFPromiseResult *result = XFPromiseResult.new;
+                                              result.hasValue = NO;
+                                              errorBlock(err);
+                                              return result;
+                                          }
+                                        : nil];
 }
 
 - (XFPromise *)thenWrapped:(XFPromiseResult * (^)(id))successBlock errorWrapped:(XFPromiseResult * (^)(NSError *))errorBlock {
