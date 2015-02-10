@@ -76,4 +76,9 @@
  */
 - (XFPromise *)error:(void (^)(NSError *))errorBlock;
 
+/**
+ * Cancel the promise and don't call any callbacks.
+ */
+- (void)cancel;
+
 @end

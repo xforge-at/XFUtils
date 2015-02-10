@@ -8,7 +8,7 @@
 
 #import "XFPromise.h"
 
-typedef enum XFPromiseState { XFPromiseStatePending, XFPromiseStateFulfilled, XFPromiseStateRejected } XFPromiseState;
+typedef enum XFPromiseState { XFPromiseStatePending, XFPromiseStateFulfilled, XFPromiseStateRejected, XFPromiseStateCancelled } XFPromiseState;
 
 @interface XFPromiseResult : NSObject
 @property (nonatomic) BOOL hasValue;
@@ -79,6 +79,7 @@ static dispatch_queue_t _isolationQueue;
             break;
         case XFPromiseStateRejected:
         case XFPromiseStateFulfilled:
+        case XFPromiseStateCancelled:
             return YES;
     }
     switch (toState) {
@@ -87,6 +88,8 @@ static dispatch_queue_t _isolationQueue;
             break;
         case XFPromiseStateRejected:
             [self runBlock:self.errorBlock withValue:self.error];
+            break;
+        case XFPromiseStateCancelled:
             break;
         default:
             return YES;
@@ -102,6 +105,15 @@ static dispatch_queue_t _isolationQueue;
         if (promise.currentState != XFPromiseStatePending) return;
         _value = value;
         [promise changeState:XFPromiseStateFulfilled];
+    });
+}
+
+- (void)cancel {
+    __weak XFPromise *weakSelf = self;
+    dispatch_async(self.isolationQueue, ^{
+        XFPromise *promise = weakSelf;
+        if (promise.currentState != XFPromiseStatePending) return;
+        [promise changeState:XFPromiseStateCancelled];
     });
 }
 
