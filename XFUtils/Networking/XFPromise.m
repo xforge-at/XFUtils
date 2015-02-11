@@ -50,25 +50,44 @@ static uint64_t IDS = 0;
 static dispatch_queue_t _isolationQueue;
 - (dispatch_queue_t)isolationQueue {
     static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{ _isolationQueue = dispatch_queue_create("at.xforge.promiseQueue", NULL); });
+    dispatch_once(&onceToken, ^{
+      _isolationQueue = dispatch_queue_create("at.xforge.promiseQueue", NULL);
+    });
     return _isolationQueue;
 }
 
 - (void)runBlock:(XFPromiseResult * (^)(id))block withValue:(id)value {
     if (block) {
         dispatch_async(self.runQueue ? self.runQueue : dispatch_get_main_queue(), ^{
-            XFPromiseResult *result = block(value);
-            [_children enumerateObjectsUsingBlock:^(XFPromise *child, NSUInteger idx, BOOL *stop) {
-                id newValue = nil;
-                if (result.hasValue) {
-                    newValue = result.value;
-                }
-                if (self.error) {
-                    [child reject:newValue ? newValue : self.error];
-                } else if (self.value) {
-                    [child fulfill:newValue ? newValue : self.value];
-                }
-            }];
+          XFPromiseResult *result = block(value);
+          __block XFPromise *intermediate = nil;
+
+          // Special handling of XFPromise return values: chain them together, so that you can return a promise in one block and have the then block that is executed there run instead of returning the
+          // promise (not what we want most of the time)
+          if (result.hasValue && [result.value isKindOfClass:XFPromise.class]) {
+              intermediate = result.value;
+          }
+
+          [_children enumerateObjectsUsingBlock:^(XFPromise *child, NSUInteger idx, BOOL *stop) {
+            if (intermediate) {
+                // Chain each call -> each child will be fulfilled/rejected in same order as here
+                intermediate = [intermediate then:^(id value) {
+                  [child fulfill:value];
+                } error:^(NSError *error) {
+                  [child reject:error];
+                }];
+                return;
+            }
+            id newValue = nil;
+            if (result.hasValue) {
+                newValue = result.value;
+            }
+            if (self.error) {
+                [child reject:newValue ? newValue : self.error];
+            } else if (self.value) {
+                [child fulfill:newValue ? newValue : self.value];
+            }
+          }];
         });
     }
 }
@@ -101,29 +120,29 @@ static dispatch_queue_t _isolationQueue;
 - (void)fulfill:(id)value {
     __weak XFPromise *weakSelf = self;
     dispatch_async(self.isolationQueue, ^{
-        XFPromise *promise = weakSelf;
-        if (promise.currentState != XFPromiseStatePending) return;
-        _value = value;
-        [promise changeState:XFPromiseStateFulfilled];
+      XFPromise *promise = weakSelf;
+      if (promise.currentState != XFPromiseStatePending) return;
+      _value = value;
+      [promise changeState:XFPromiseStateFulfilled];
     });
 }
 
 - (void)cancel {
     __weak XFPromise *weakSelf = self;
     dispatch_async(self.isolationQueue, ^{
-        XFPromise *promise = weakSelf;
-        if (promise.currentState != XFPromiseStatePending) return;
-        [promise changeState:XFPromiseStateCancelled];
+      XFPromise *promise = weakSelf;
+      if (promise.currentState != XFPromiseStatePending) return;
+      [promise changeState:XFPromiseStateCancelled];
     });
 }
 
 - (void)reject:(NSError *)error {
     __weak XFPromise *weakSelf = self;
     dispatch_async(self.isolationQueue, ^{
-        XFPromise *promise = weakSelf;
-        if (promise.currentState != XFPromiseStatePending) return;
-        _error = error;
-        [promise changeState:XFPromiseStateRejected];
+      XFPromise *promise = weakSelf;
+      if (promise.currentState != XFPromiseStatePending) return;
+      _error = error;
+      [promise changeState:XFPromiseStateRejected];
     });
 }
 
@@ -169,19 +188,19 @@ static dispatch_queue_t _isolationQueue;
     __weak XFPromise *weakSelf = self;
     XFPromise *returnPromise = [self returnDescendant];
     dispatch_async(self.isolationQueue, ^{
-        XFPromise *promise = weakSelf;
-        if (errorBlock) _errorBlock = errorBlock;
-        if (successBlock) _successBlock = successBlock;
-        switch (promise.currentState) {
-            case XFPromiseStateFulfilled:
-                [promise runBlock:_successBlock withValue:promise.value];
-                break;
-            case XFPromiseStateRejected:
-                [promise runBlock:_errorBlock withValue:promise.error];
-                break;
-            default:
-                break;
-        }
+      XFPromise *promise = weakSelf;
+      if (errorBlock) _errorBlock = errorBlock;
+      if (successBlock) _successBlock = successBlock;
+      switch (promise.currentState) {
+          case XFPromiseStateFulfilled:
+              [promise runBlock:_successBlock withValue:promise.value];
+              break;
+          case XFPromiseStateRejected:
+              [promise runBlock:_errorBlock withValue:promise.error];
+              break;
+          default:
+              break;
+      }
     });
     return returnPromise;
 }
