@@ -15,6 +15,7 @@ IndentWidth: 4
 MaxEmptyLinesToKeep: 1
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: true
+ObjCBlockIndentWidth: 4
 PointerBindsToType: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements
