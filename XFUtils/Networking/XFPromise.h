@@ -46,6 +46,11 @@
 + (instancetype)promise;
 
 /**
+ *  Create a new promise with an initial value
+ */
++ (instancetype)promiseWithValue:(id)value;
+
+/**
  *  Reject the promise with the specified error.
  *
  *  @param error The error that is passed to the errorBlock
