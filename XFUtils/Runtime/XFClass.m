@@ -11,17 +11,21 @@
 #import "XFMethod.h"
 #import "XFVariable.h"
 #import "XFProperty.h"
+#import "XFRuntime.h"
 
 @implementation XFClass {
     NSArray *_instanceMethods, *_classMethods, *_properties, *_protocols, *_instanceVariables;
     XFClass *_superClass;
     NSPointerArray *_occupiedMemory;
+    Class _class;
 }
 
 static NSMutableDictionary *classes = nil;
 + (instancetype)classWithClassName:(NSString *)className {
     static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{ classes = [NSMutableDictionary dictionary]; });
+    dispatch_once(&onceToken, ^{
+        classes = [NSMutableDictionary dictionary];
+    });
     if (classes[className]) return classes[className];
 
     classes[className] = [[XFClass alloc] initWithClassName:className];
@@ -33,6 +37,7 @@ static NSMutableDictionary *classes = nil;
     self = super.init;
     if (self) {
         _className = className;
+        _class = NSClassFromString(className);
         _occupiedMemory = [[NSPointerArray alloc] initWithOptions:NSPointerFunctionsOpaqueMemory];
     }
     return self;
@@ -117,6 +122,35 @@ static NSMutableDictionary *classes = nil;
 
 - (NSString *)description {
     return _className;
+}
+
+- (Class)internalClass {
+    return _class;
+}
+
+static NSCache *_subclassCache = NULL;
+
+- (NSArray *)subclasses {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _subclassCache = [NSCache new];
+    });
+    NSMutableArray *subclasses = [@[] mutableCopy];
+    if ([_subclassCache objectForKey:self.className]) {
+        return [_subclassCache objectForKey:self.className];
+    }
+
+    NSArray *classes = [[XFRuntime sharedRuntime] classes];
+    [classes enumerateObjectsUsingBlock:^(XFClass *subclass, NSUInteger idx, BOOL *stop) {
+        id superclass = class_getSuperclass(subclass.internalClass);
+        if (superclass && [subclass.internalClass isSubclassOfClass:self.internalClass]) [subclasses addObject:subclass];
+    }];
+
+    [subclasses removeObject:self.internalClass];
+    NSArray *savedArray = subclasses.copy;
+    [_subclassCache setObject:savedArray forKey:self.className];
+
+    return subclasses.copy;
 }
 
 - (void)dealloc {
