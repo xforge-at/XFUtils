@@ -142,8 +142,12 @@ static NSCache *_subclassCache = NULL;
 
     NSArray *classes = [[XFRuntime sharedRuntime] classes];
     [classes enumerateObjectsUsingBlock:^(XFClass *subclass, NSUInteger idx, BOOL *stop) {
-        id superclass = class_getSuperclass(subclass.internalClass);
-        if (superclass && [subclass.internalClass isSubclassOfClass:self.internalClass]) [subclasses addObject:subclass];
+        if ([subclass.className hasPrefix:@"_"] || [subclass.className hasPrefix:@"JS"] || [subclass.className hasPrefix:@"CL"]) return; // Internal Apple classes
+        id superclass = NSClassFromString(subclass.className);
+        do {
+            superclass = class_getSuperclass(superclass);
+        } while (superclass && superclass != self.internalClass);
+        if (superclass) [subclasses addObject:subclass];
     }];
 
     [subclasses removeObject:self.internalClass];
