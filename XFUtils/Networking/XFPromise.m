@@ -93,6 +93,8 @@ static dispatch_queue_t _isolationQueue;
                     [child reject:newValue ? newValue : self.error];
                 } else if (self.value) {
                     [child fulfill:newValue ? newValue : self.value];
+                } else if (newValue) {
+                    [child fulfill:newValue];
                 }
             }];
         });
