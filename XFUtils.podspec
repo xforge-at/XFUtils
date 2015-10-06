@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "XFUtils"
-  s.version      = "0.11"
+  s.version      = "0.12"
   s.summary      = "Utility methods used in XForge projects"
 
   s.description  = <<-DESC
